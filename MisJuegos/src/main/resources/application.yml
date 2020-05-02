@@ -1,0 +1,14 @@
+aplicacion:
+  nombre: Tutorial Spring Boot
+   
+server:
+  port: 9083
+  servlet:
+    context-path: /misjuegos
+  
+spring:
+  data:
+    mongodb:
+      database: TestJuegos
+      port: 27017
+      host: localhost
