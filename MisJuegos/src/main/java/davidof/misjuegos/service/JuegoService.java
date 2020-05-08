@@ -38,4 +38,12 @@ public interface JuegoService {
 	 */
 	void eliminar(String id);
 	
+	/**
+	 * Devuelve la lista que coincide con la expresionRegular
+	 * 
+	 * @param id Id del producto
+	 * @return
+	 */
+	Optional<List<Juego>> obtenerJuegoRegex(String regex);
+	
 }

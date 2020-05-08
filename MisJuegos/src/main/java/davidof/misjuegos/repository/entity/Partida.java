@@ -5,8 +5,7 @@ import java.time.LocalDate;
 import org.springframework.data.annotation.Id;
 
 public class Partida {
-	@Id
-	private String id;
+	
 	private LocalDate fecha;
 	private Boolean ganador;
 	public LocalDate getFecha() {

@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import davidof.misjuegos.repository.entity.Partida;
 import davidof.misjuegos.repository.entity.PartidaJuego;
 import davidof.misjuegos.service.JuegoService;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RequestMapping("/api")
 @RestController
 public class JuegosController {
@@ -32,7 +34,7 @@ public class JuegosController {
 		public void guardar(@RequestBody Juego juego) {
 			JuegoService.guardar(juego);
 		}
-
+		
 		
 		@GetMapping("/juegos")
 		public List<Juego> obtenerTodosJuegos() {
@@ -45,19 +47,24 @@ public class JuegosController {
 			return JuegoService.obtenerJuego(nombre);
 		}
 		
-		@GetMapping("juegos/listaDeseos")
+		@GetMapping("juegos/buscar/{regex}")
+		public Optional<List<Juego>> obtenerJuegoQuery(@PathVariable String regex) {
+			return JuegoService.obtenerJuegoRegex(regex);
+		}
+		
+		@GetMapping("juegos/listadeseos")
 		public List<Juego> obtenerListaDeseos() {
-			return JuegoService.obtenerTodosJuegos().stream().filter(juego -> juego.getEnListaDeseos()).collect(Collectors.toList());
+			return JuegoService.obtenerTodosJuegos().stream().filter(juego -> juego.getEnListaDeseos()!=null && juego.getEnListaDeseos()).collect(Collectors.toList());
 		}
 		
 		@GetMapping("juegos/coleccion")
 		public List<Juego> obtenerColeccion() {
-			return JuegoService.obtenerTodosJuegos().stream().filter(juego -> juego.getEnColeccion()).collect(Collectors.toList());
+			return JuegoService.obtenerTodosJuegos().stream().filter(juego -> juego.getEnListaDeseos()!=null &&  juego.getEnColeccion()).collect(Collectors.toList());
 		}
 		
 		@GetMapping("juegos/seguimiento")
 		public List<Juego> obtenerSeguimiento() {
-			return JuegoService.obtenerTodosJuegos().stream().filter(juego -> juego.getEnSeguimiento()).collect(Collectors.toList());
+			return JuegoService.obtenerTodosJuegos().stream().filter(juego -> juego.getEnSeguimiento()!=null && juego.getEnSeguimiento()).collect(Collectors.toList());
 		}
 		
 		@GetMapping("juegos/{nombre}/partidas")
@@ -75,12 +82,29 @@ public class JuegosController {
 		@GetMapping("juegos/partidas")
 		public List<PartidaJuego> obtenerTodasPartidas() {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
+					.filter(juego-> juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream().map(p -> {
-						PartidaJuego pj = new PartidaJuego();
-						pj.setFecha(p.getFecha());
-						pj.setGanador(p.getGanador());
-						pj.setJuego(j.getNombre());
-						return pj;
+							PartidaJuego pj = new PartidaJuego();
+							pj.setFecha(p.getFecha());
+							pj.setGanador(p.getGanador());
+							pj.setJuego(j.getNombre());
+							return pj;							
+					})).collect(Collectors.toList());
+			return partidas;
+		}
+		
+		@GetMapping("juegos/partidas/ganadas")
+		public List<PartidaJuego> obtenerTodasPartidasGanadas() {
+			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
+					.filter(juego-> juego.getPartidas()!=null)
+					.flatMap(j -> j.getPartidas().stream()
+							.filter(p -> p.getGanador()!=null && p.getGanador())
+							.map(p -> {
+							PartidaJuego pj = new PartidaJuego();
+							pj.setFecha(p.getFecha());
+							pj.setGanador(p.getGanador());
+							pj.setJuego(j.getNombre());
+							return pj;							
 					})).collect(Collectors.toList());
 			return partidas;
 		}
@@ -88,6 +112,7 @@ public class JuegosController {
 		@GetMapping("juegos/partidas/{mes}")
 		public List<PartidaJuego> obtenerTodasPartidas(@PathVariable String mes) {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
+					.filter(juego-> juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream()
 							.filter(p -> p.getFecha().getMonth().name().equalsIgnoreCase(mes))
 							.map(p -> {
