@@ -110,11 +110,11 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/partidas/{mes}")
-		public List<PartidaJuego> obtenerTodasPartidas(@PathVariable String mes) {
+		public List<PartidaJuego> obtenerTodasPartidas(@PathVariable int mes) {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
 					.filter(juego-> juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream()
-							.filter(p -> p.getFecha().getMonth().name().equalsIgnoreCase(mes))
+							.filter(p -> p.getFecha().getMonth().getValue()==mes)
 							.map(p -> {
 						PartidaJuego pj = new PartidaJuego();
 						pj.setFecha(p.getFecha());
