@@ -2,9 +2,7 @@ package davidof.misjuegos.repository.entity;
 
 import java.time.LocalDate;
 
-import org.springframework.data.annotation.Id;
-
-public class Partida {
+public class Partida implements Comparable<Partida> {
 	
 	private LocalDate fecha;
 	private Boolean ganador;
@@ -20,5 +18,11 @@ public class Partida {
 	public void setGanador(Boolean ganador) {
 		this.ganador = ganador;
 	}
+	@Override
+	public int compareTo(Partida o) {
+		this.getFecha().compareTo(o.getFecha());
+		return 0;
+	}
+	
 
 }

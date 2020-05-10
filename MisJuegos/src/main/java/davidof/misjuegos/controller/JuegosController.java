@@ -1,6 +1,7 @@
 package davidof.misjuegos.controller;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import davidof.misjuegos.PartidasJuegoComparator;
 import davidof.misjuegos.repository.entity.Juego;
 import davidof.misjuegos.repository.entity.Partida;
 import davidof.misjuegos.repository.entity.PartidaJuego;
@@ -69,13 +71,18 @@ public class JuegosController {
 		
 		@GetMapping("juegos/{nombre}/partidas")
 		public List<Partida> obtenerPartidas(@PathVariable String nombre) {
-			return JuegoService.obtenerJuego(nombre).map(j -> j.getPartidas()).orElseGet(ArrayList<Partida>::new);
+			List<Partida> partidas = JuegoService.obtenerJuego(nombre).map(j -> j.getPartidas()).orElseGet(ArrayList<Partida>::new);
+			partidas.sort(new PartidasJuegoComparator());
+			return partidas;
 		}
 		
 		@GetMapping("juegos/{nombre}/ganadas")
 		public List<Partida> obtenerPartidasGanadas(@PathVariable String nombre) {
 			return JuegoService.obtenerJuego(nombre)
-					.map(j -> j.getPartidas().stream().filter(p -> p.getGanador()).collect(Collectors.toList()))
+					.map(j -> j.getPartidas().stream()
+							.filter(p -> p.getGanador())
+							.sorted()
+							.collect(Collectors.toList()))
 					.orElseGet(ArrayList<Partida>::new);
 		}
 		
@@ -89,8 +96,9 @@ public class JuegosController {
 							pj.setGanador(p.getGanador());
 							pj.setJuego(j.getNombre());
 							return pj;							
-					})).collect(Collectors.toList());
-			return partidas;
+					})).sorted().collect(Collectors.toList());
+			 partidas.sort(new PartidasJuegoComparator());
+			 return partidas;
 		}
 		
 		@GetMapping("juegos/partidas/ganadas")
@@ -106,6 +114,7 @@ public class JuegosController {
 							pj.setJuego(j.getNombre());
 							return pj;							
 					})).collect(Collectors.toList());
+			partidas.sort(new PartidasJuegoComparator());
 			return partidas;
 		}
 		
@@ -122,6 +131,7 @@ public class JuegosController {
 						pj.setJuego(j.getNombre());
 						return pj;
 					})).collect(Collectors.toList());
+			partidas.sort(new PartidasJuegoComparator());
 			return partidas;
 		}
 		
@@ -130,6 +140,8 @@ public class JuegosController {
 		public void eliminar(@PathVariable String id) {
 			JuegoService.eliminar(id);	
 		}
+		
+
 		
 	
 }
