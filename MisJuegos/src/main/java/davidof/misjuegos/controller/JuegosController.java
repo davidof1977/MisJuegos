@@ -56,17 +56,20 @@ public class JuegosController {
 		
 		@GetMapping("juegos/listadeseos")
 		public List<Juego> obtenerListaDeseos() {
-			return JuegoService.obtenerTodosJuegos().stream().filter(juego -> juego.getEnListaDeseos()!=null && juego.getEnListaDeseos()).collect(Collectors.toList());
+			return JuegoService.obtenerTodosJuegos().stream()
+					.filter(juego -> juego.getEnListaDeseos()!=null && juego.getEnListaDeseos()).collect(Collectors.toList());
 		}
 		
 		@GetMapping("juegos/coleccion")
 		public List<Juego> obtenerColeccion() {
-			return JuegoService.obtenerTodosJuegos().stream().filter(juego -> juego.getEnListaDeseos()!=null &&  juego.getEnColeccion()).collect(Collectors.toList());
+			return JuegoService.obtenerTodosJuegos().stream()
+					.filter(juego -> juego.getEnColeccion()!=null && juego.getEnColeccion()).collect(Collectors.toList());
 		}
 		
 		@GetMapping("juegos/seguimiento")
 		public List<Juego> obtenerSeguimiento() {
-			return JuegoService.obtenerTodosJuegos().stream().filter(juego -> juego.getEnSeguimiento()!=null && juego.getEnSeguimiento()).collect(Collectors.toList());
+			return JuegoService.obtenerTodosJuegos().stream()
+					.filter(juego -> juego.getEnSeguimiento()!=null && juego.getEnSeguimiento()).collect(Collectors.toList());
 		}
 		
 		@GetMapping("juegos/{nombre}/partidas")
@@ -95,6 +98,7 @@ public class JuegosController {
 							pj.setFecha(p.getFecha());
 							pj.setGanador(p.getGanador());
 							pj.setJuego(j.getNombre());
+							pj.setPuntos(p.getPuntos());
 							return pj;							
 					})).sorted().collect(Collectors.toList());
 			 partidas.sort(new PartidasJuegoComparator());
@@ -112,6 +116,7 @@ public class JuegosController {
 							pj.setFecha(p.getFecha());
 							pj.setGanador(p.getGanador());
 							pj.setJuego(j.getNombre());
+							pj.setPuntos(p.getPuntos());
 							return pj;							
 					})).collect(Collectors.toList());
 			partidas.sort(new PartidasJuegoComparator());
@@ -129,6 +134,7 @@ public class JuegosController {
 						pj.setFecha(p.getFecha());
 						pj.setGanador(p.getGanador());
 						pj.setJuego(j.getNombre());
+						pj.setPuntos(p.getPuntos());
 						return pj;
 					})).collect(Collectors.toList());
 			partidas.sort(new PartidasJuegoComparator());

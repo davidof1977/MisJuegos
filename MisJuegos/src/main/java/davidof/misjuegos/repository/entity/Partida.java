@@ -6,6 +6,13 @@ public class Partida implements Comparable<Partida> {
 	
 	private LocalDate fecha;
 	private Boolean ganador;
+	private Integer puntos;
+	public Integer getPuntos() {
+		return puntos;
+	}
+	public void setPuntos(Integer puntos) {
+		this.puntos = puntos;
+	}
 	public LocalDate getFecha() {
 		return fecha;
 	}
