@@ -1,7 +1,6 @@
 package davidof.misjuegos.controller;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import davidof.misjuegos.PartidasJuegoComparator;
 import davidof.misjuegos.repository.entity.Juego;
+import davidof.misjuegos.repository.entity.Jugador;
 import davidof.misjuegos.repository.entity.Partida;
 import davidof.misjuegos.repository.entity.PartidaJuego;
 import davidof.misjuegos.service.JuegoService;
@@ -99,6 +99,7 @@ public class JuegosController {
 							pj.setGanador(p.getGanador());
 							pj.setJuego(j.getNombre());
 							pj.setPuntos(p.getPuntos());
+							pj.setJugadores(p.getJugadores());
 							return pj;							
 					})).sorted().collect(Collectors.toList());
 			 partidas.sort(new PartidasJuegoComparator());
@@ -117,6 +118,7 @@ public class JuegosController {
 							pj.setGanador(p.getGanador());
 							pj.setJuego(j.getNombre());
 							pj.setPuntos(p.getPuntos());
+							pj.setJugadores(p.getJugadores());;
 							return pj;							
 					})).collect(Collectors.toList());
 			partidas.sort(new PartidasJuegoComparator());
@@ -128,13 +130,14 @@ public class JuegosController {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
 					.filter(juego-> juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream()
-							.filter(p -> p.getFecha().getMonth().getValue()==mes)
+							.filter(p ->  p.getFecha().getMonth().getValue()==mes)
 							.map(p -> {
 						PartidaJuego pj = new PartidaJuego();
 						pj.setFecha(p.getFecha());
 						pj.setGanador(p.getGanador());
 						pj.setJuego(j.getNombre());
 						pj.setPuntos(p.getPuntos());
+						pj.setJugadores(p.getJugadores());
 						return pj;
 					})).collect(Collectors.toList());
 			partidas.sort(new PartidasJuegoComparator());
@@ -146,8 +149,19 @@ public class JuegosController {
 		public void eliminar(@PathVariable String id) {
 			JuegoService.eliminar(id);	
 		}
+		@GetMapping("juegos/partidas/jugadores/{regex}")
+		public List<String> obtenerJugadores(@PathVariable String regex){
+			List<String> jugadores = JuegoService.obtenerTodosJuegos().stream()
+				.filter(juego-> juego.getPartidas()!=null)
+				.flatMap(j -> j.getPartidas().stream())
+				.filter(p -> p.getJugadores()!= null)
+				.flatMap(partida -> partida.getJugadores().stream())
+				.distinct()
+				.map(j -> j.getNombre())
+				.collect(Collectors.toList());
+			return jugadores.stream().filter(n -> n.matches(regex)).collect(Collectors.toList());
+		}
 		
-
-		
+	
 	
 }
