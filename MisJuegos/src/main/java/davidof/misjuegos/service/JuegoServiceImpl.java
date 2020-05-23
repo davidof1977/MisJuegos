@@ -37,8 +37,9 @@ public class JuegoServiceImpl implements JuegoService {
 	}
 
 	@Override
-	public void eliminar(String id) {
-		juegoRepository.deleteById(id);	
+	public void eliminar(String name) {
+		System.out.println(name);
+		juegoRepository.deleteByNombre(name);	
 	}
 
 	/*@Override

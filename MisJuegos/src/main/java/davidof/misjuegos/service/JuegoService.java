@@ -36,7 +36,7 @@ public interface JuegoService {
 	 * 
 	 * @param id Id del producto
 	 */
-	void eliminar(String id);
+	void eliminar(String name);
 	
 	/**
 	 * Devuelve la lista que coincide con la expresionRegular

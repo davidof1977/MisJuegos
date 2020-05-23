@@ -125,8 +125,8 @@ public class JuegosController {
 			return partidas;
 		}
 		
-		@GetMapping("juegos/partidas/{mes}")
-		public List<PartidaJuego> obtenerTodasPartidas(@PathVariable int mes) {
+		@GetMapping("juegos/partidas/mes/{mes}")
+		public List<PartidaJuego> obtenerTodasPartidasMes(@PathVariable int mes) {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
 					.filter(juego-> juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream()
@@ -144,10 +144,29 @@ public class JuegosController {
 			return partidas;
 		}
 		
+		@GetMapping("juegos/partidas/anio/{anio}")
+		public List<PartidaJuego> obtenerTodasPartidasAnio(@PathVariable int anio) {
+			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
+					.filter(juego-> juego.getPartidas()!=null)
+					.flatMap(j -> j.getPartidas().stream()
+							.filter(p ->  p.getFecha().getYear()==anio)
+							.map(p -> {
+						PartidaJuego pj = new PartidaJuego();
+						pj.setFecha(p.getFecha());
+						pj.setGanador(p.getGanador());
+						pj.setJuego(j.getNombre());
+						pj.setPuntos(p.getPuntos());
+						pj.setJugadores(p.getJugadores());
+						return pj;
+					})).collect(Collectors.toList());
+			partidas.sort(new PartidasJuegoComparator());
+			return partidas;
+		}
+		
 
-		@DeleteMapping("juegos/{id}")
-		public void eliminar(@PathVariable String id) {
-			JuegoService.eliminar(id);	
+		@DeleteMapping("juegos/{name}")
+		public void eliminar(@PathVariable String name) {
+			JuegoService.eliminar(name);	
 		}
 		@GetMapping("juegos/partidas/jugadores/{regex}")
 		public List<String> obtenerJugadores(@PathVariable String regex){
