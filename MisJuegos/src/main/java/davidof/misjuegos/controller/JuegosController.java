@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -87,19 +88,40 @@ public class JuegosController {
 		
 		@GetMapping("juegos/{nombre}/partidas")
 		public List<Partida> obtenerPartidas(@PathVariable String nombre) {
-			List<Partida> partidas = JuegoService.obtenerJuego(nombre).map(j -> j.getPartidas()).orElseGet(ArrayList<Partida>::new);
-			partidas.sort(new PartidasJuegoComparator());
-			return partidas;
+			try {
+				Juego juego = JuegoService.obtenerJuego(nombre).orElseThrow(NotFoundException::new);
+				List<Partida> partidas = juego.getPartidas();
+				if(partidas!=null && partidas.size()> 0) {
+					partidas.sort(new PartidasJuegoComparator());
+					return partidas;
+				}else {
+					 throw new ResponseStatusException(
+					          HttpStatus.NOT_FOUND, "No hay partidas para este juego.");
+				}
+			}
+			catch(NotFoundException e) {
+				 throw new ResponseStatusException(
+				          HttpStatus.NOT_FOUND, "El juego no existe.");
+			}
+
 		}
 		
 		@GetMapping("juegos/{nombre}/ganadas")
 		public List<Partida> obtenerPartidasGanadas(@PathVariable String nombre) {
-			return JuegoService.obtenerJuego(nombre)
-					.map(j -> j.getPartidas().stream()
-							.filter(p -> p.getGanador())
-							.sorted()
-							.collect(Collectors.toList()))
-					.orElseGet(ArrayList<Partida>::new);
+			Optional<Juego> juegos = JuegoService.obtenerJuego(nombre);
+			Optional<List<Partida>> partidas;
+			try {
+				partidas = Optional.ofNullable(juegos.orElseThrow(NotFoundException::new).getPartidas());
+				return partidas.orElseGet(ArrayList<Partida>::new).stream()
+						.filter(p -> p.getGanador())
+						.sorted()
+						.collect(Collectors.toList());
+			} catch (NotFoundException e) {
+				// TODO Auto-generated catch block
+				 throw new ResponseStatusException(
+				          HttpStatus.NOT_FOUND, "El juego no existe.");
+			}
+		
 		}
 		
 		@GetMapping("juegos/partidas")
