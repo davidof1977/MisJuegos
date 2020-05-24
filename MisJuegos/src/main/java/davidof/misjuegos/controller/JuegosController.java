@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,10 +15,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import davidof.misjuegos.PartidasJuegoComparator;
 import davidof.misjuegos.repository.entity.Juego;
-import davidof.misjuegos.repository.entity.Jugador;
 import davidof.misjuegos.repository.entity.Partida;
 import davidof.misjuegos.repository.entity.PartidaJuego;
 import davidof.misjuegos.service.JuegoService;
@@ -46,12 +47,24 @@ public class JuegosController {
 	
 		@GetMapping("juegos/{nombre}")
 		public Optional<Juego> obtenerJuego(@PathVariable String nombre) {
-			return JuegoService.obtenerJuego(nombre);
+			Optional<Juego> juego = JuegoService.obtenerJuego(nombre);
+			if (!juego.isPresent()) {
+		        throw new ResponseStatusException(
+				          HttpStatus.NOT_FOUND, "El juego no existe");
+			}else {
+				return juego;
+			}			
 		}
 		
 		@GetMapping("juegos/buscar/{regex}")
 		public Optional<List<Juego>> obtenerJuegoQuery(@PathVariable String regex) {
-			return JuegoService.obtenerJuegoRegex(regex);
+			Optional<List<Juego>> juegos = JuegoService.obtenerJuegoRegex(regex);
+			if (juegos.get().isEmpty()) {
+		        throw new ResponseStatusException(
+				          HttpStatus.NOT_FOUND, "El juego no existe");
+			}else {
+				return juegos;
+			}
 		}
 		
 		@GetMapping("juegos/listadeseos")
