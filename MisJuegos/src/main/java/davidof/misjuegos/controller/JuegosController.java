@@ -263,16 +263,47 @@ public class JuegosController {
 					stat.setPuntuacionMaxima(jug.stream().max(new PuntosComparator()).get().getPuntosJugador());
 					stat.setPuntuacionMedia(Math.round(jug.stream().mapToInt(j -> j.getPuntosJugador()).average().getAsDouble()));
 					stat.setVictorias(jug.stream().filter(j -> j.isGanador()).count());
-					stat.setPctVictorias((double)stat.getVictorias()/stat.getPartidas()*100);
-					
+					stat.setPctVictorias(round((double)stat.getVictorias()/stat.getPartidas()*100,2));
 					stats.add(stat);
 					
 				} );
 				return stats;
-			}			
+			}
 			
-
 		}
+		
+		public static double round(double value, int places) {
+		    if (places < 0) throw new IllegalArgumentException();
+
+		    long factor = (long) Math.pow(10, places);
+		    value = value * factor;
+		    long tmp = Math.round(value);
+		    return (double) tmp / factor;
+		}
+		
+		@GetMapping("juegos/{nombre}/records")
+		public Jugador obtenerRecordsJuego(@PathVariable String nombre){
+			Optional<Juego> juego = JuegoService.obtenerJuego(nombre);
+			if (!juego.isPresent()) {
+		        throw new ResponseStatusException(
+				          HttpStatus.NOT_FOUND, "El juego no existe");
+			}else {
+				List<Jugador> jugadores = juego.get().getPartidas().stream()
+				.filter(p -> p.getJugadores()!=null)
+				.flatMap(p -> p.getJugadores().stream()).collect(Collectors.toList());
+				jugadores.addAll(juego.get().getPartidas().stream()
+					.map(p -> {
+						Jugador j = new Jugador();
+						j.setNombre("Tu");
+						j.setPuntosJugador(p.getPuntos());
+						return j;
+					}).collect(Collectors.toList()));
+				
+				return jugadores.stream().sorted((p1,p2) -> p2.getPuntosJugador()-p1.getPuntosJugador()).findFirst().get();
+			}
+		
+		}
+	
 		
 		
 	

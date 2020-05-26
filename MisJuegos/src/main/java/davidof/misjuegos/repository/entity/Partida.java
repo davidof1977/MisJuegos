@@ -51,7 +51,7 @@ public class Partida implements Comparable<Partida> {
 	
 	public String getNombreGanador() {
 		if(jugadores!=null) {
-			Jugador j = jugadores.stream().sorted(new PuntosComparator()).findFirst().get();
+			Jugador j = jugadores.stream().sorted((j1,j2) -> j2.getPuntosJugador()-j1.getPuntosJugador()).findFirst().get();
 			if (j.getPuntosJugador().intValue()> this.puntos)
 				return j.getNombre();
 			else
