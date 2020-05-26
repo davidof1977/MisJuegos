@@ -38,5 +38,12 @@ public class Jugador {
 		this.puntosJugador = puntos;
 	}
 	private Integer puntosJugador;
+	private boolean ganador;
+	public boolean isGanador() {
+		return ganador;
+	}
+	public void setGanador(boolean ganador) {
+		this.ganador = ganador;
+	}
 
 }

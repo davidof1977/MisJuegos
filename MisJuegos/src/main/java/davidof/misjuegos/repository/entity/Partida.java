@@ -3,12 +3,22 @@ package davidof.misjuegos.repository.entity;
 import java.time.LocalDate;
 import java.util.List;
 
+import davidof.misjuegos.PuntosComparator;
+
 public class Partida implements Comparable<Partida> {
 	
 	private LocalDate fecha;
 	private Boolean ganador;
 	private Integer puntos;
 	private List<Jugador> jugadores;
+	private boolean primeraPartida;
+	
+	public boolean isPrimeraPartida() {
+		return primeraPartida;
+	}
+	public void setPrimeraPartida(boolean primeraPartida) {
+		this.primeraPartida = primeraPartida;
+	}
 	public List<Jugador> getJugadores() {
 		return jugadores;
 	}
@@ -39,5 +49,16 @@ public class Partida implements Comparable<Partida> {
 		return 0;
 	}
 	
+	public String getNombreGanador() {
+		if(jugadores!=null) {
+			Jugador j = jugadores.stream().sorted(new PuntosComparator()).findFirst().get();
+			if (j.getPuntosJugador().intValue()> this.puntos)
+				return j.getNombre();
+			else
+				return "Tu";
+		}else
+			return "Tu";
 
+
+}
 }

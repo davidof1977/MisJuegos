@@ -2,6 +2,7 @@ package davidof.misjuegos.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -19,7 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import davidof.misjuegos.PartidasJuegoComparator;
+import davidof.misjuegos.PuntosComparator;
+import davidof.misjuegos.repository.entity.EstadisticasJuego;
 import davidof.misjuegos.repository.entity.Juego;
+import davidof.misjuegos.repository.entity.Jugador;
 import davidof.misjuegos.repository.entity.Partida;
 import davidof.misjuegos.repository.entity.PartidaJuego;
 import davidof.misjuegos.service.JuegoService;
@@ -135,6 +139,7 @@ public class JuegosController {
 							pj.setJuego(j.getNombre());
 							pj.setPuntos(p.getPuntos());
 							pj.setJugadores(p.getJugadores());
+							pj.setPrimeraPartida(p.isPrimeraPartida());
 							return pj;							
 					})).sorted().collect(Collectors.toList());
 			 partidas.sort(new PartidasJuegoComparator());
@@ -154,6 +159,7 @@ public class JuegosController {
 							pj.setJuego(j.getNombre());
 							pj.setPuntos(p.getPuntos());
 							pj.setJugadores(p.getJugadores());;
+							pj.setPrimeraPartida(p.isPrimeraPartida());
 							return pj;							
 					})).collect(Collectors.toList());
 			partidas.sort(new PartidasJuegoComparator());
@@ -173,6 +179,7 @@ public class JuegosController {
 						pj.setJuego(j.getNombre());
 						pj.setPuntos(p.getPuntos());
 						pj.setJugadores(p.getJugadores());
+						pj.setPrimeraPartida(p.isPrimeraPartida());
 						return pj;
 					})).collect(Collectors.toList());
 			partidas.sort(new PartidasJuegoComparator());
@@ -192,6 +199,7 @@ public class JuegosController {
 						pj.setJuego(j.getNombre());
 						pj.setPuntos(p.getPuntos());
 						pj.setJugadores(p.getJugadores());
+						pj.setPrimeraPartida(p.isPrimeraPartida());
 						return pj;
 					})).collect(Collectors.toList());
 			partidas.sort(new PartidasJuegoComparator());
@@ -215,6 +223,57 @@ public class JuegosController {
 				.collect(Collectors.toList());
 			return jugadores.stream().filter(n -> n.matches(regex)).collect(Collectors.toList());
 		}
+		
+		@GetMapping("juegos/{nombre}/estadisticas")
+		public List<EstadisticasJuego>  obtenerEstadisticasJuego(@PathVariable String nombre){
+			Optional<Juego> juego = JuegoService.obtenerJuego(nombre);
+			if (!juego.isPresent()) {
+		        throw new ResponseStatusException(
+				          HttpStatus.NOT_FOUND, "El juego no existe");
+			}else {
+				List<Jugador> jugadores = juego.get().getPartidas().stream()
+				.filter(p -> p.getJugadores()!=null)
+				.flatMap(p -> p.getJugadores().stream().map(j -> {
+					if (j.getNombre().equalsIgnoreCase(p.getNombreGanador()))
+						j.setGanador(true);
+					else
+						j.setGanador(false);
+					return j;
+
+				})).collect(Collectors.toList());
+				jugadores.addAll(juego.get().getPartidas().stream()
+					.map(p -> {
+						Jugador j = new Jugador();
+						j.setNombre("Tu");
+						j.setPuntosJugador(p.getPuntos());
+						if (j.getNombre().equalsIgnoreCase(p.getNombreGanador()))
+							j.setGanador(true);
+						else
+							j.setGanador(false);
+						return j;
+					}).collect(Collectors.toList()));
+				//Agrupar por jugador obteniendo numero de partidas, numero de victorias, puntuancion max y puntuacion media
+				final List<EstadisticasJuego> stats = new ArrayList<>();
+				
+				Map<String,List<Jugador>> mapaJugadores = jugadores.stream().collect(Collectors.groupingBy(Jugador::getNombre));
+				mapaJugadores.forEach((nom, jug) ->{
+					EstadisticasJuego stat = new EstadisticasJuego();
+					stat.setJugador(nom);
+					stat.setPartidas(jug.size());
+					stat.setPuntuacionMaxima(jug.stream().max(new PuntosComparator()).get().getPuntosJugador());
+					stat.setPuntuacionMedia(Math.round(jug.stream().mapToInt(j -> j.getPuntosJugador()).average().getAsDouble()));
+					stat.setVictorias(jug.stream().filter(j -> j.isGanador()).count());
+					stat.setPctVictorias((double)stat.getVictorias()/stat.getPartidas()*100);
+					
+					stats.add(stat);
+					
+				} );
+				return stats;
+			}			
+			
+
+		}
+		
 		
 	
 	
