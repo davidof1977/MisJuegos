@@ -22,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 import davidof.misjuegos.PartidasJuegoComparator;
 import davidof.misjuegos.PuntosComparator;
 import davidof.misjuegos.repository.entity.EstadisticasJuego;
+import davidof.misjuegos.repository.entity.EstadisticasPersonales;
 import davidof.misjuegos.repository.entity.Juego;
 import davidof.misjuegos.repository.entity.Jugador;
 import davidof.misjuegos.repository.entity.Partida;
@@ -304,7 +305,25 @@ public class JuegosController {
 		
 		}
 	
-		
+		@GetMapping("juegos/estadisticas/personales")
+		public List<EstadisticasPersonales>  obtenerEstadisticasPersonales(){
+			List<Juego> juegos = JuegoService.obtenerTodosJuegos();
+			List<EstadisticasPersonales> estadisticas = juegos.stream()
+				.filter(j -> j.getPartidas()!=null)	
+				.map(j -> {
+					EstadisticasPersonales est = new EstadisticasPersonales();
+					est.setJuego(j.getNombre());
+					est.setPartidas(j.getPartidas().size());
+					est.setVictorias(j.getPartidas().stream().filter(p -> p.getGanador()!=null && p.getGanador()).count());
+					est.setPctVictorias(round((double)est.getVictorias()/est.getPartidas()*100,2));
+					est.setPuntuacionMaxima(j.getPartidas().stream().max((p1,p2) -> p1.getPuntos() - p2.getPuntos()).get().getPuntos());
+					est.setPuntuacionMedia(Math.round(j.getPartidas().stream().mapToInt(p -> p.getPuntos()).average().getAsDouble()));
+					return est;
+
+				}).collect(Collectors.toList());
+
+				return estadisticas;
+			}
 		
 	
 	
