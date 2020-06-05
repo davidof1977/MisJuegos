@@ -147,6 +147,18 @@ public class JuegosController {
 			 return partidas;
 		}
 		
+		@GetMapping("juegos/partidas/distintos")
+		public Integer obtenerJuegosPartidasDistintos() {
+			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
+					.filter(juego-> juego.getPartidas()!=null)
+					.flatMap(j -> j.getPartidas().stream().map(p -> {
+							PartidaJuego pj = new PartidaJuego();
+							pj.setJuego(j.getNombre());
+							return pj;							
+					})).collect(Collectors.toList());
+			 return partidas.stream().collect(Collectors.groupingBy(PartidaJuego::getJuego)).size();
+		}
+		
 		@GetMapping("juegos/partidas/ganadas")
 		public List<PartidaJuego> obtenerTodasPartidasGanadas() {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
@@ -187,6 +199,20 @@ public class JuegosController {
 			return partidas;
 		}
 		
+		@GetMapping("juegos/partidas/distintos/mes/{mes}")
+		public Integer obtenerPartidasJuegosDistintosMes(@PathVariable int mes) {
+			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
+					.filter(juego-> juego.getPartidas()!=null)
+					.flatMap(j -> j.getPartidas().stream()
+							.filter(p ->  p.getFecha().getMonth().getValue()==mes)
+							.map(p -> {
+						PartidaJuego pj = new PartidaJuego();
+						pj.setJuego(j.getNombre());
+						return pj;
+					})).collect(Collectors.toList());
+			return partidas.stream().collect(Collectors.groupingBy(PartidaJuego::getJuego)).size();
+		}
+		
 		@GetMapping("juegos/partidas/anio/{anio}")
 		public List<PartidaJuego> obtenerTodasPartidasAnio(@PathVariable int anio) {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
@@ -205,6 +231,20 @@ public class JuegosController {
 					})).collect(Collectors.toList());
 			partidas.sort(new PartidasJuegoComparator());
 			return partidas;
+		}
+		
+		@GetMapping("juegos/partidas/distintos/anio/{anio}")
+		public Integer obtenerPartidasJuegosDistintosAnio(@PathVariable int anio) {
+			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
+					.filter(juego-> juego.getPartidas()!=null)
+					.flatMap(j -> j.getPartidas().stream()
+							.filter(p ->  p.getFecha().getYear()==anio)
+							.map(p -> {
+						PartidaJuego pj = new PartidaJuego();
+						pj.setJuego(j.getNombre());
+						return pj;
+					})).collect(Collectors.toList());
+			return partidas.stream().collect(Collectors.groupingBy(PartidaJuego::getJuego)).keySet().size();
 		}
 		
 
