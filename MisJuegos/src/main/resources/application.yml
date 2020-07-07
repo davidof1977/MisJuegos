@@ -2,7 +2,7 @@ aplicacion:
   nombre: Mis Juegos api
    
 server:
-  port: 9083
+  port: ${PORT:9083}
   servlet:
     context-path: /misjuegos
   
