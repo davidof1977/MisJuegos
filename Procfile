@@ -1,1 +1,1 @@
-web: java -Dserver.port=9083 -jar target/MisJuegos-0.0.1-SNAPSHOT.jar
+web: java -Dserver.port=9083 -jar  target/MisJuegos-0.0.1-SNAPSHOT.jar
