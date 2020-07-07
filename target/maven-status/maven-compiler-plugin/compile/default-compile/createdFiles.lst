@@ -1,0 +1,13 @@
+davidof\misjuegos\service\JuegoService.class
+davidof\misjuegos\repository\JuegoRepository.class
+davidof\misjuegos\repository\entity\Jugador.class
+davidof\misjuegos\repository\entity\EstadisticasPersonales.class
+davidof\misjuegos\repository\entity\Juego.class
+davidof\misjuegos\controller\JuegosController.class
+davidof\misjuegos\repository\entity\Partida.class
+davidof\misjuegos\repository\entity\PartidaJuego.class
+davidof\misjuegos\repository\entity\EstadisticasJuego.class
+davidof\misjuegos\MisJuegosApplication.class
+davidof\misjuegos\service\JuegoServiceImpl.class
+davidof\misjuegos\PartidasJuegoComparator.class
+davidof\misjuegos\PuntosComparator.class
