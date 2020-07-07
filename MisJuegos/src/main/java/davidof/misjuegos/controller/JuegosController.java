@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.reactive.error.ErrorAttributes;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -16,11 +17,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import davidof.misjuegos.PartidasJuegoComparator;
 import davidof.misjuegos.PuntosComparator;
+import davidof.misjuegos.repository.entity.ErrorPruebas;
 import davidof.misjuegos.repository.entity.EstadisticasJuego;
 import davidof.misjuegos.repository.entity.EstadisticasPersonales;
 import davidof.misjuegos.repository.entity.Juego;
@@ -29,7 +32,7 @@ import davidof.misjuegos.repository.entity.Partida;
 import davidof.misjuegos.repository.entity.PartidaJuego;
 import davidof.misjuegos.service.JuegoService;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "*", maxAge = 3600, allowedHeaders = "*", methods = RequestMethod.POST)
 @RequestMapping("/api")
 @RestController
 public class JuegosController {
@@ -147,6 +150,10 @@ public class JuegosController {
 			 return partidas;
 		}
 		
+		/**
+		 * Obtiene a cuantos juegos diferentes se ha jugado
+		 * @return
+		 */
 		@GetMapping("juegos/partidas/distintos")
 		public Integer obtenerJuegosPartidasDistintos() {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
@@ -363,6 +370,17 @@ public class JuegosController {
 				}).collect(Collectors.toList());
 
 				return estadisticas;
+			}
+		
+		@GetMapping("juegos/errorpruebas")
+		public ErrorPruebas  obtenerError(){
+				ErrorPruebas e = new ErrorPruebas();
+				e.setCodigo(401);
+				String msg = "Error - 1307. <BR> Se ha producido un error. "
+						+ "Pongase en contacto con el SAU</BR> ";
+				System.out.println(msg);
+				e.setDescription(msg);
+				return e;
 			}
 		
 	

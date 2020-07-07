@@ -1,5 +1,5 @@
 aplicacion:
-  nombre: Tutorial Spring Boot
+  nombre: Mis Juegos api
    
 server:
   port: 9083
@@ -9,6 +9,4 @@ server:
 spring:
   data:
     mongodb:
-      database: TestJuegos
-      port: 27017
-      host: localhost
+      uri: mongodb+srv://davidof1977:baralo18@davidof1977.4gzm1.mongodb.net/mis-juegos?retryWrites=true&w=majority
