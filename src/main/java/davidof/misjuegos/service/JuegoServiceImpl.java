@@ -49,8 +49,8 @@ public class JuegoServiceImpl implements JuegoService {
 	
 	@Override
 	public Optional<List<Juego>> obtenerJuegoRegex(String regex) {
-		MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
-		MongoTemplate template = new MongoTemplate(mongoClient, "TestJuegos");
+		MongoClient mongoClient = MongoClients.create("mongodb+srv://davidof1977:baralo18@davidof1977.4gzm1.mongodb.net/mis-juegos?retryWrites=true&w=majority");
+		MongoTemplate template = new MongoTemplate(mongoClient, "mis-juegos");
 		Criteria criterios = Criteria.where("nombre").regex(regex, "i");      
 		List<Juego> juegos = template.find(new Query().addCriteria(criterios),Juego.class);
 		return Optional.of(juegos);
