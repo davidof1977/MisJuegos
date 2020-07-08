@@ -32,7 +32,7 @@ import davidof.misjuegos.repository.entity.Partida;
 import davidof.misjuegos.repository.entity.PartidaJuego;
 import davidof.misjuegos.service.JuegoService;
 
-@CrossOrigin(origins = "*", maxAge = 3600, allowedHeaders = "*", methods = RequestMethod.POST)
+@CrossOrigin(origins = "*", maxAge = 3600, allowedHeaders = "*")
 @RequestMapping("/api")
 @RestController
 public class JuegosController {
