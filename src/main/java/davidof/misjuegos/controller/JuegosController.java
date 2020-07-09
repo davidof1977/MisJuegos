@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.reactive.error.ErrorAttributes;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -16,8 +15,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -49,25 +48,33 @@ public class JuegosController {
 		
 		
 		@GetMapping("/juegos")
-		public List<Juego> obtenerTodosJuegos() {
-			return JuegoService.obtenerTodosJuegos();
+		public List<Juego> obtenerTodosJuegos(@RequestHeader("usuario") String usuario) {
+			List<Juego> juegos = null;
+			try {
+				juegos = JuegoService.obtenerJuegos(usuario).orElseThrow(NotFoundException::new);
+				return juegos;
+			}
+			catch(NotFoundException e) {
+				 throw new ResponseStatusException(
+				          HttpStatus.NOT_FOUND, "El juego no existe.");
+			}
 		}
 
 	
 		@GetMapping("juegos/{nombre}")
-		public Optional<Juego> obtenerJuego(@PathVariable String nombre) {
+		public Optional<Juego> obtenerJuego(@PathVariable String nombre, @RequestHeader("usuario") String usuario) {
 			Optional<Juego> juego = JuegoService.obtenerJuego(nombre);
 			if (!juego.isPresent()) {
 		        throw new ResponseStatusException(
 				          HttpStatus.NOT_FOUND, "El juego no existe");
 			}else {
-				return juego;
+				return juego.filter(j -> j.getUsuario().equalsIgnoreCase(usuario));
 			}			
 		}
 		
 		@GetMapping("juegos/buscar/{regex}")
-		public Optional<List<Juego>> obtenerJuegoQuery(@PathVariable String regex) {
-			Optional<List<Juego>> juegos = JuegoService.obtenerJuegoRegex(regex);
+		public Optional<List<Juego>> obtenerJuegoQuery(@PathVariable String regex, @RequestHeader("usuario") String usuario) {
+			Optional<List<Juego>> juegos = JuegoService.obtenerJuegoRegex(regex, usuario);
 			if (juegos.get().isEmpty()) {
 		        throw new ResponseStatusException(
 				          HttpStatus.NOT_FOUND, "El juego no existe");
@@ -77,27 +84,27 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/listadeseos")
-		public List<Juego> obtenerListaDeseos() {
+		public List<Juego> obtenerListaDeseos(@RequestHeader("usuario") String usuario) {
 			return JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego -> juego.getEnListaDeseos()!=null && juego.getEnListaDeseos()).collect(Collectors.toList());
+					.filter(juego -> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getEnListaDeseos()!=null && juego.getEnListaDeseos()).collect(Collectors.toList());
 		}
 		
 		@GetMapping("juegos/coleccion")
-		public List<Juego> obtenerColeccion() {
+		public List<Juego> obtenerColeccion(@RequestHeader("usuario") String usuario) {
 			return JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego -> juego.getEnColeccion()!=null && juego.getEnColeccion()).collect(Collectors.toList());
+					.filter(juego -> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getEnColeccion()!=null && juego.getEnColeccion()).collect(Collectors.toList());
 		}
 		
 		@GetMapping("juegos/seguimiento")
-		public List<Juego> obtenerSeguimiento() {
+		public List<Juego> obtenerSeguimiento(@RequestHeader("usuario") String usuario) {
 			return JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego -> juego.getEnSeguimiento()!=null && juego.getEnSeguimiento()).collect(Collectors.toList());
+					.filter(juego -> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getEnSeguimiento()!=null && juego.getEnSeguimiento()).collect(Collectors.toList());
 		}
 		
 		@GetMapping("juegos/{nombre}/partidas")
-		public List<Partida> obtenerPartidas(@PathVariable String nombre) {
+		public List<Partida> obtenerPartidas(@PathVariable String nombre, @RequestHeader("usuario") String usuario) {
 			try {
-				Juego juego = JuegoService.obtenerJuego(nombre).orElseThrow(NotFoundException::new);
+				Juego juego = JuegoService.obtenerJuego(nombre).filter(j -> j.getUsuario().equalsIgnoreCase(usuario)).orElseThrow(NotFoundException::new);
 				List<Partida> partidas = juego.getPartidas();
 				if(partidas!=null && partidas.size()> 0) {
 					partidas.sort(new PartidasJuegoComparator());
@@ -115,8 +122,8 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/{nombre}/ganadas")
-		public List<Partida> obtenerPartidasGanadas(@PathVariable String nombre) {
-			Optional<Juego> juegos = JuegoService.obtenerJuego(nombre);
+		public List<Partida> obtenerPartidasGanadas(@PathVariable String nombre, @RequestHeader("usuario") String usuario) {
+			Optional<Juego> juegos = JuegoService.obtenerJuego(nombre).filter(j -> j.getUsuario().equalsIgnoreCase(usuario));
 			Optional<List<Partida>> partidas;
 			try {
 				partidas = Optional.ofNullable(juegos.orElseThrow(NotFoundException::new).getPartidas());
@@ -133,9 +140,9 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/partidas")
-		public List<PartidaJuego> obtenerTodasPartidas() {
+		public List<PartidaJuego> obtenerTodasPartidas(@RequestHeader("usuario") String usuario) {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego-> juego.getPartidas()!=null)
+					.filter(juego-> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream().map(p -> {
 							PartidaJuego pj = new PartidaJuego();
 							pj.setFecha(p.getFecha());
@@ -155,9 +162,9 @@ public class JuegosController {
 		 * @return
 		 */
 		@GetMapping("juegos/partidas/distintos")
-		public Integer obtenerJuegosPartidasDistintos() {
+		public Integer obtenerJuegosPartidasDistintos(@RequestHeader("usuario") String usuario) {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego-> juego.getPartidas()!=null)
+					.filter(juego-> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream().map(p -> {
 							PartidaJuego pj = new PartidaJuego();
 							pj.setJuego(j.getNombre());
@@ -167,9 +174,9 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/partidas/ganadas")
-		public List<PartidaJuego> obtenerTodasPartidasGanadas() {
+		public List<PartidaJuego> obtenerTodasPartidasGanadas(@RequestHeader("usuario") String usuario) {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego-> juego.getPartidas()!=null)
+					.filter(juego-> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream()
 							.filter(p -> p.getGanador()!=null && p.getGanador())
 							.map(p -> {
@@ -187,9 +194,9 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/partidas/mes/{mes}")
-		public List<PartidaJuego> obtenerTodasPartidasMes(@PathVariable int mes) {
+		public List<PartidaJuego> obtenerTodasPartidasMes(@PathVariable int mes, @RequestHeader("usuario") String usuario) {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego-> juego.getPartidas()!=null)
+					.filter(juego-> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream()
 							.filter(p ->  p.getFecha().getMonth().getValue()==mes)
 							.map(p -> {
@@ -207,9 +214,9 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/partidas/distintos/mes/{mes}")
-		public Integer obtenerPartidasJuegosDistintosMes(@PathVariable int mes) {
+		public Integer obtenerPartidasJuegosDistintosMes(@PathVariable int mes, @RequestHeader("usuario") String usuario) {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego-> juego.getPartidas()!=null)
+					.filter(juego-> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream()
 							.filter(p ->  p.getFecha().getMonth().getValue()==mes)
 							.map(p -> {
@@ -221,9 +228,9 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/partidas/anio/{anio}")
-		public List<PartidaJuego> obtenerTodasPartidasAnio(@PathVariable int anio) {
+		public List<PartidaJuego> obtenerTodasPartidasAnio(@PathVariable int anio, @RequestHeader("usuario") String usuario) {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego-> juego.getPartidas()!=null)
+					.filter(juego-> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream()
 							.filter(p ->  p.getFecha().getYear()==anio)
 							.map(p -> {
@@ -241,9 +248,9 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/partidas/distintos/anio/{anio}")
-		public Integer obtenerPartidasJuegosDistintosAnio(@PathVariable int anio) {
+		public Integer obtenerPartidasJuegosDistintosAnio(@PathVariable int anio, @RequestHeader("usuario") String usuario) {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego-> juego.getPartidas()!=null)
+					.filter(juego-> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream()
 							.filter(p ->  p.getFecha().getYear()==anio)
 							.map(p -> {
@@ -256,13 +263,13 @@ public class JuegosController {
 		
 
 		@DeleteMapping("juegos/{name}")
-		public void eliminar(@PathVariable String name) {
-			JuegoService.eliminar(name);	
+		public void eliminar(@PathVariable String name, @RequestHeader("usuario") String usuario) {
+			JuegoService.eliminar(name, usuario);	
 		}
 		@GetMapping("juegos/partidas/jugadores/{regex}")
-		public List<String> obtenerJugadores(@PathVariable String regex){
+		public List<String> obtenerJugadores(@PathVariable String regex, @RequestHeader("usuario") String usuario){
 			List<String> jugadores = JuegoService.obtenerTodosJuegos().stream()
-				.filter(juego-> juego.getPartidas()!=null)
+				.filter(juego-> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getPartidas()!=null)
 				.flatMap(j -> j.getPartidas().stream())
 				.filter(p -> p.getJugadores()!= null)
 				.flatMap(partida -> partida.getJugadores().stream())
@@ -273,8 +280,8 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/{nombre}/estadisticas")
-		public List<EstadisticasJuego>  obtenerEstadisticasJuego(@PathVariable String nombre){
-			Optional<Juego> juego = JuegoService.obtenerJuego(nombre);
+		public List<EstadisticasJuego>  obtenerEstadisticasJuego(@PathVariable String nombre, @RequestHeader("usuario") String usuario){
+			Optional<Juego> juego = JuegoService.obtenerJuego(nombre).filter(j -> j.getUsuario().equalsIgnoreCase(usuario));
 			if (!juego.isPresent()) {
 		        throw new ResponseStatusException(
 				          HttpStatus.NOT_FOUND, "El juego no existe");
@@ -330,8 +337,8 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/{nombre}/records")
-		public Jugador obtenerRecordsJuego(@PathVariable String nombre){
-			Optional<Juego> juego = JuegoService.obtenerJuego(nombre);
+		public Jugador obtenerRecordsJuego(@PathVariable String nombre, @RequestHeader("usuario") String usuario){
+			Optional<Juego> juego = JuegoService.obtenerJuego(nombre).filter(j -> j.getUsuario().equalsIgnoreCase(usuario));
 			if (!juego.isPresent()) {
 		        throw new ResponseStatusException(
 				          HttpStatus.NOT_FOUND, "El juego no existe");
@@ -353,9 +360,9 @@ public class JuegosController {
 		}
 	
 		@GetMapping("juegos/estadisticas/personales")
-		public List<EstadisticasPersonales>  obtenerEstadisticasPersonales(){
-			List<Juego> juegos = JuegoService.obtenerTodosJuegos();
-			List<EstadisticasPersonales> estadisticas = juegos.stream()
+		public List<EstadisticasPersonales>  obtenerEstadisticasPersonales(@RequestHeader("usuario") String usuario){
+			Optional<List<Juego>> juegos = JuegoService.obtenerJuegos(usuario);
+			List<EstadisticasPersonales> estadisticas = juegos.get().stream()
 				.filter(j -> j.getPartidas()!=null)	
 				.map(j -> {
 					EstadisticasPersonales est = new EstadisticasPersonales();
@@ -382,6 +389,10 @@ public class JuegosController {
 				e.setDescription(msg);
 				return e;
 			}
+		@GetMapping("usuarios/{usuario}")
+		public boolean validarUsuario(String usuario) {
+		 return	JuegoService.validarUsuario(usuario);
+		}
 		
 	
 	

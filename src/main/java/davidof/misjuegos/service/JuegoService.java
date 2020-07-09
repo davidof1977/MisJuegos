@@ -36,7 +36,7 @@ public interface JuegoService {
 	 * 
 	 * @param id Id del producto
 	 */
-	void eliminar(String name);
+	void eliminar(String name, String usuario);
 	
 	/**
 	 * Devuelve la lista que coincide con la expresionRegular
@@ -44,6 +44,16 @@ public interface JuegoService {
 	 * @param id Id del producto
 	 * @return
 	 */
-	Optional<List<Juego>> obtenerJuegoRegex(String regex);
+	Optional<List<Juego>> obtenerJuegoRegex(String regex, String usuario);
+	
+	/**
+	 * Devuelve la lista del usuario
+	 * 
+	 * @param id Id del usuario
+	 * @return
+	 */
+	Optional<List<Juego>> obtenerJuegos(String usuario);
+	
+	Boolean validarUsuario(String usuario);
 	
 }

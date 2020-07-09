@@ -37,9 +37,8 @@ public class JuegoServiceImpl implements JuegoService {
 	}
 
 	@Override
-	public void eliminar(String name) {
-		System.out.println(name);
-		juegoRepository.deleteByNombre(name);	
+	public void eliminar(String name, String usuario) {
+		juegoRepository.deleteByNombreAndUsuario(name, usuario);
 	}
 
 	/*@Override
@@ -48,13 +47,32 @@ public class JuegoServiceImpl implements JuegoService {
 	}*/
 	
 	@Override
-	public Optional<List<Juego>> obtenerJuegoRegex(String regex) {
+	public Optional<List<Juego>> obtenerJuegoRegex(String regex, String usuario) {
 		MongoClient mongoClient = MongoClients.create("mongodb+srv://davidof1977:baralo18@davidof1977.4gzm1.mongodb.net/mis-juegos?retryWrites=true&w=majority");
 		MongoTemplate template = new MongoTemplate(mongoClient, "mis-juegos");
-		Criteria criterios = Criteria.where("nombre").regex(regex, "i");      
-		List<Juego> juegos = template.find(new Query().addCriteria(criterios),Juego.class);
+		Query q = new Query();
+		Criteria criterioNombre = Criteria.where("nombre").regex(regex, "i");
+		Criteria criterioUsuario = Criteria.where("usuario").is(usuario);
+		q.addCriteria(criterioNombre);
+		q.addCriteria(criterioUsuario);
+		List<Juego> juegos = template.find(q,Juego.class);
+		
 		return Optional.of(juegos);
 		
+	}
+	
+	@Override 
+	public Boolean validarUsuario(String usuario) {
+		MongoClient mongoClient = MongoClients.create("mongodb+srv://davidof1977:baralo18@davidof1977.4gzm1.mongodb.net/mis-juegos?retryWrites=true&w=majority");
+		MongoTemplate template = new MongoTemplate(mongoClient, "mis-juegos");
+		Criteria criterios = Criteria.where("usuario").is(usuario);
+		List<Juego> juegos = template.find(new Query().addCriteria(criterios),Juego.class);
+		return !juegos.isEmpty();
+	}
+	
+	@Override
+	public Optional<List<Juego>> obtenerJuegos(String usuario) {
+		return juegoRepository.findByUsuario(usuario);
 	}
 	
 }

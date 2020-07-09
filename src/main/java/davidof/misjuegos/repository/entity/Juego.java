@@ -9,6 +9,12 @@ public class Juego {
 	@Id
 	private String id;
 	private String img;
+	private Boolean enColeccion;
+	private Boolean enSeguimiento;
+	private Boolean enListaDeseos;
+	private List<Partida> partidas;
+	private String usuario;
+	
 	public String getImg() {
 		return img;
 	}
@@ -52,8 +58,10 @@ public class Juego {
 	public void setPartidas(List<Partida> partidas) {
 		this.partidas = partidas;
 	}
-	private Boolean enColeccion;
-	private Boolean enSeguimiento;
-	private Boolean enListaDeseos;
-	private List<Partida> partidas;
+	public String getUsuario() {
+		return usuario;
+	}
+	public void setUsuario(String usuario) {
+		this.usuario = usuario;
+	}
 }

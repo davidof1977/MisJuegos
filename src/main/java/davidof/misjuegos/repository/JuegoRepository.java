@@ -11,8 +11,8 @@ import davidof.misjuegos.repository.entity.Juego;
 @Repository
 public interface JuegoRepository extends MongoRepository<Juego, String> {
 	public Optional<Juego> findByNombre(String nombre);
+	public Optional<List<Juego>> findByUsuario(String usuario);
 	public Optional<List<Juego>> findByNombreRegex(String regex);
-	public void deleteByNombre(String name);
-	
+	public void deleteByNombreAndUsuario(String name, String usuario);
 }
 
