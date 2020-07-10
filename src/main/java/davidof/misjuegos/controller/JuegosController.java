@@ -370,8 +370,13 @@ public class JuegosController {
 					est.setPartidas(j.getPartidas().size());
 					est.setVictorias(j.getPartidas().stream().filter(p -> p.getGanador()!=null && p.getGanador()).count());
 					est.setPctVictorias(round((double)est.getVictorias()/est.getPartidas()*100,2));
-					est.setPuntuacionMaxima(j.getPartidas().stream().max((p1,p2) -> p1.getPuntos() - p2.getPuntos()).get().getPuntos());
-					est.setPuntuacionMedia(Math.round(j.getPartidas().stream().mapToInt(p -> p.getPuntos()).average().getAsDouble()));
+					if(j.getPartidas()!=null && j.getPartidas().size()>0) {
+						est.setPuntuacionMaxima( j.getPartidas().stream().max((p1,p2) -> p1.getPuntos() - p2.getPuntos()).get().getPuntos());
+						est.setPuntuacionMedia(Math.round(j.getPartidas().stream().mapToInt(p -> p.getPuntos()).average().getAsDouble()));
+					}else {
+						est.setPuntuacionMaxima(0);
+						est.setPuntuacionMedia(new Long(0));
+					}
 					return est;
 
 				}).collect(Collectors.toList());
