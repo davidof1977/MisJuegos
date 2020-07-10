@@ -5,11 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -18,7 +15,7 @@ import davidof.misjuegos.repository.entity.Usuario;
 import davidof.misjuegos.service.UsuarioService;
 
 @CrossOrigin(origins = "*", maxAge = 3600, allowedHeaders = "*")
-@RequestMapping("/api")
+@RequestMapping("")
 @RestController
 public class UsuariosController {
 	
@@ -26,18 +23,23 @@ public class UsuariosController {
 		@Autowired
 		private UsuarioService usuarioService;
 
-		
+		//private BCryptPasswordEncoder bCryptPasswordEncoder;
+
 		@PostMapping(path = "/registro", consumes = "application/json")
 		public void guardar(@RequestBody Usuario usuario) {
+			//bCryptPasswordEncoder = new BCryptPasswordEncoder();
+			//usuario.setPassword(bCryptPasswordEncoder.encode(usuario.getPassword()));
 			usuarioService.guardar(usuario);
 		}
 		
 			
-		@GetMapping("/login/{nombre}")
-		public Boolean validarUsuario(@PathVariable String nombre, @RequestHeader("password") String password) {
-			List<Usuario> usuario = usuarioService.obtenerUsuario(nombre);
+		@PostMapping(path = "/login", consumes = "application/json")
+		public Boolean validarUsuario(@RequestBody Usuario usuario) {
+			List<Usuario> usuarios = usuarioService.obtenerUsuario(usuario.getNombre());
+			//bCryptPasswordEncoder = new BCryptPasswordEncoder();
 			if (usuario != null) {
-				return usuario.stream().anyMatch(u -> u.getPassword().equalsIgnoreCase(password));
+				//return usuarios.stream().anyMatch(u -> u.getPassword().equalsIgnoreCase(bCryptPasswordEncoder.encode(usuario.getPassword())));
+				return usuarios.stream().anyMatch(u -> u.getPassword().equalsIgnoreCase(usuario.getPassword()));
 			}else {
 
 		        throw new ResponseStatusException(
