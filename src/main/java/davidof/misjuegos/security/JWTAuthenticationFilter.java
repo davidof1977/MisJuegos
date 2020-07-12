@@ -2,12 +2,16 @@ package davidof.misjuegos.security;
 
 
 import static davidof.misjuegos.security.Constantes.HEADER_AUTHORIZACION_KEY;
+import static davidof.misjuegos.security.Constantes.HEADER_EXPIRATION_KEY;
 import static davidof.misjuegos.security.Constantes.ISSUER_INFO;
 import static davidof.misjuegos.security.Constantes.SUPER_SECRET_KEY;
 import static davidof.misjuegos.security.Constantes.TOKEN_BEARER_PREFIX;
 import static davidof.misjuegos.security.Constantes.TOKEN_EXPIRATION_TIME;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -54,11 +58,14 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
 			Authentication auth) throws IOException, ServletException {
 
+		Date tokenExpiration = new Date(System.currentTimeMillis() + TOKEN_EXPIRATION_TIME);
 		String token = Jwts.builder().setIssuedAt(new Date()).setIssuer(ISSUER_INFO)
 				.setSubject(((User)auth.getPrincipal()).getUsername())
-				.setExpiration(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION_TIME))
+				.setExpiration(tokenExpiration)
 				.signWith(SignatureAlgorithm.HS512, SUPER_SECRET_KEY).compact();
 		response.addHeader("Access-Control-Expose-Headers", HEADER_AUTHORIZACION_KEY);
+		response.addHeader("Access-Control-Expose-Headers", HEADER_EXPIRATION_KEY);
+		response.addHeader(HEADER_EXPIRATION_KEY, String.valueOf(tokenExpiration.getTime()));
 		response.addHeader(HEADER_AUTHORIZACION_KEY, TOKEN_BEARER_PREFIX + " " + token);
 		
 	}
