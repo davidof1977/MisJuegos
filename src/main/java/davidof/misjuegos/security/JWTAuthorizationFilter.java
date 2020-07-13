@@ -48,7 +48,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 						.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
 						.getBody()
 						.getSubject();
-
+			
 			if (user != null) {
 				return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
 			}

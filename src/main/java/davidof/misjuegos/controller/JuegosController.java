@@ -1,5 +1,8 @@
 package davidof.misjuegos.controller;
 
+import static davidof.misjuegos.security.Constantes.SUPER_SECRET_KEY;
+import static davidof.misjuegos.security.Constantes.TOKEN_BEARER_PREFIX;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +33,7 @@ import davidof.misjuegos.repository.entity.Jugador;
 import davidof.misjuegos.repository.entity.Partida;
 import davidof.misjuegos.repository.entity.PartidaJuego;
 import davidof.misjuegos.service.JuegoService;
+import io.jsonwebtoken.Jwts;
 
 @CrossOrigin(origins = "*", maxAge = 3600, allowedHeaders = "*")
 @RequestMapping("/api")
@@ -48,9 +52,10 @@ public class JuegosController {
 		
 		
 		@GetMapping("/juegos")
-		public List<Juego> obtenerTodosJuegos(@RequestHeader("usuario") String usuario) {
+		public List<Juego> obtenerTodosJuegos(@RequestHeader("authorization") String jwt) {
 			List<Juego> juegos = null;
 			try {
+				String usuario = getUserFormJWT(jwt);
 				juegos = JuegoService.obtenerJuegos(usuario).orElseThrow(NotFoundException::new);
 				return juegos;
 			}
@@ -60,21 +65,35 @@ public class JuegosController {
 			}
 		}
 
+
+		/**
+		 * @param jwt
+		 * @return
+		 */
+		private String getUserFormJWT(String jwt) {
+			String usuario = Jwts.parser()
+					.setSigningKey(SUPER_SECRET_KEY)
+					.parseClaimsJws(jwt.replace(TOKEN_BEARER_PREFIX, ""))
+					.getBody()
+					.getSubject();
+			return usuario;
+		}
+
 	
 		@GetMapping("juegos/{nombre}")
-		public Optional<Juego> obtenerJuego(@PathVariable String nombre, @RequestHeader("usuario") String usuario) {
+		public Optional<Juego> obtenerJuego(@PathVariable String nombre, @RequestHeader("authorization") String jwt) {
 			Optional<Juego> juego = JuegoService.obtenerJuego(nombre);
 			if (!juego.isPresent()) {
 		        throw new ResponseStatusException(
 				          HttpStatus.NOT_FOUND, "El juego no existe");
 			}else {
-				return juego.filter(j -> j.getUsuario().equalsIgnoreCase(usuario));
+				return juego.filter(j -> j.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt)));
 			}			
 		}
 		
 		@GetMapping("juegos/buscar/{regex}")
-		public Optional<List<Juego>> obtenerJuegoQuery(@PathVariable String regex, @RequestHeader("usuario") String usuario) {
-			Optional<List<Juego>> juegos = JuegoService.obtenerJuegoRegex(regex, usuario);
+		public Optional<List<Juego>> obtenerJuegoQuery(@PathVariable String regex, @RequestHeader("authorization") String jwt) {
+			Optional<List<Juego>> juegos = JuegoService.obtenerJuegoRegex(regex, getUserFormJWT(jwt));
 			if (juegos.get().isEmpty()) {
 		        throw new ResponseStatusException(
 				          HttpStatus.NOT_FOUND, "El juego no existe");
@@ -84,27 +103,27 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/listadeseos")
-		public List<Juego> obtenerListaDeseos(@RequestHeader("usuario") String usuario) {
+		public List<Juego> obtenerListaDeseos(@RequestHeader("authorization") String jwt) {
 			return JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego -> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getEnListaDeseos()!=null && juego.getEnListaDeseos()).collect(Collectors.toList());
+					.filter(juego -> juego.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt)) && juego.getEnListaDeseos()!=null && juego.getEnListaDeseos()).collect(Collectors.toList());
 		}
 		
 		@GetMapping("juegos/coleccion")
-		public List<Juego> obtenerColeccion(@RequestHeader("usuario") String usuario) {
+		public List<Juego> obtenerColeccion(@RequestHeader("authorization") String jwt) {
 			return JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego -> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getEnColeccion()!=null && juego.getEnColeccion()).collect(Collectors.toList());
+					.filter(juego -> juego.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt)) && juego.getEnColeccion()!=null && juego.getEnColeccion()).collect(Collectors.toList());
 		}
 		
 		@GetMapping("juegos/seguimiento")
-		public List<Juego> obtenerSeguimiento(@RequestHeader("usuario") String usuario) {
+		public List<Juego> obtenerSeguimiento(@RequestHeader("authorization") String jwt) {
 			return JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego -> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getEnSeguimiento()!=null && juego.getEnSeguimiento()).collect(Collectors.toList());
+					.filter(juego -> juego.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt)) && juego.getEnSeguimiento()!=null && juego.getEnSeguimiento()).collect(Collectors.toList());
 		}
 		
 		@GetMapping("juegos/{nombre}/partidas")
-		public List<Partida> obtenerPartidas(@PathVariable String nombre, @RequestHeader("usuario") String usuario) {
+		public List<Partida> obtenerPartidas(@PathVariable String nombre, @RequestHeader("authorization") String jwt) {
 			try {
-				Juego juego = JuegoService.obtenerJuego(nombre).filter(j -> j.getUsuario().equalsIgnoreCase(usuario)).orElseThrow(NotFoundException::new);
+				Juego juego = JuegoService.obtenerJuego(nombre).filter(j -> j.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt))).orElseThrow(NotFoundException::new);
 				List<Partida> partidas = juego.getPartidas();
 				if(partidas!=null && partidas.size()> 0) {
 					partidas.sort(new PartidasJuegoComparator());
@@ -122,8 +141,8 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/{nombre}/ganadas")
-		public List<Partida> obtenerPartidasGanadas(@PathVariable String nombre, @RequestHeader("usuario") String usuario) {
-			Optional<Juego> juegos = JuegoService.obtenerJuego(nombre).filter(j -> j.getUsuario().equalsIgnoreCase(usuario));
+		public List<Partida> obtenerPartidasGanadas(@PathVariable String nombre, @RequestHeader("authorization") String jwt) {
+			Optional<Juego> juegos = JuegoService.obtenerJuego(nombre).filter(j -> j.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt)));
 			Optional<List<Partida>> partidas;
 			try {
 				partidas = Optional.ofNullable(juegos.orElseThrow(NotFoundException::new).getPartidas());
@@ -140,9 +159,9 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/partidas")
-		public List<PartidaJuego> obtenerTodasPartidas(@RequestHeader("usuario") String usuario) {
+		public List<PartidaJuego> obtenerTodasPartidas(@RequestHeader("authorization") String jwt) {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego-> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getPartidas()!=null)
+					.filter(juego-> juego.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt)) && juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream().map(p -> {
 							PartidaJuego pj = new PartidaJuego();
 							pj.setFecha(p.getFecha());
@@ -162,9 +181,9 @@ public class JuegosController {
 		 * @return
 		 */
 		@GetMapping("juegos/partidas/distintos")
-		public Integer obtenerJuegosPartidasDistintos(@RequestHeader("usuario") String usuario) {
+		public Integer obtenerJuegosPartidasDistintos(@RequestHeader("authorization") String jwt) {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego-> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getPartidas()!=null)
+					.filter(juego-> juego.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt)) && juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream().map(p -> {
 							PartidaJuego pj = new PartidaJuego();
 							pj.setJuego(j.getNombre());
@@ -174,9 +193,9 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/partidas/ganadas")
-		public List<PartidaJuego> obtenerTodasPartidasGanadas(@RequestHeader("usuario") String usuario) {
+		public List<PartidaJuego> obtenerTodasPartidasGanadas(@RequestHeader("authorization") String jwt) {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego-> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getPartidas()!=null)
+					.filter(juego-> juego.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt)) && juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream()
 							.filter(p -> p.getGanador()!=null && p.getGanador())
 							.map(p -> {
@@ -194,9 +213,9 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/partidas/mes/{mes}")
-		public List<PartidaJuego> obtenerTodasPartidasMes(@PathVariable int mes, @RequestHeader("usuario") String usuario) {
+		public List<PartidaJuego> obtenerTodasPartidasMes(@PathVariable int mes, @RequestHeader("authorization") String jwt) {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego-> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getPartidas()!=null)
+					.filter(juego-> juego.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt)) && juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream()
 							.filter(p ->  p.getFecha().getMonth().getValue()==mes)
 							.map(p -> {
@@ -214,9 +233,9 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/partidas/distintos/mes/{mes}")
-		public Integer obtenerPartidasJuegosDistintosMes(@PathVariable int mes, @RequestHeader("usuario") String usuario) {
+		public Integer obtenerPartidasJuegosDistintosMes(@PathVariable int mes, @RequestHeader("authorization") String jwt) {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego-> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getPartidas()!=null)
+					.filter(juego-> juego.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt)) && juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream()
 							.filter(p ->  p.getFecha().getMonth().getValue()==mes)
 							.map(p -> {
@@ -228,9 +247,9 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/partidas/anio/{anio}")
-		public List<PartidaJuego> obtenerTodasPartidasAnio(@PathVariable int anio, @RequestHeader("usuario") String usuario) {
+		public List<PartidaJuego> obtenerTodasPartidasAnio(@PathVariable int anio, @RequestHeader("authorization") String jwt) {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego-> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getPartidas()!=null)
+					.filter(juego-> juego.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt)) && juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream()
 							.filter(p ->  p.getFecha().getYear()==anio)
 							.map(p -> {
@@ -248,9 +267,9 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/partidas/distintos/anio/{anio}")
-		public Integer obtenerPartidasJuegosDistintosAnio(@PathVariable int anio, @RequestHeader("usuario") String usuario) {
+		public Integer obtenerPartidasJuegosDistintosAnio(@PathVariable int anio, @RequestHeader("authorization") String jwt) {
 			List<PartidaJuego> partidas = JuegoService.obtenerTodosJuegos().stream()
-					.filter(juego-> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getPartidas()!=null)
+					.filter(juego-> juego.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt)) && juego.getPartidas()!=null)
 					.flatMap(j -> j.getPartidas().stream()
 							.filter(p ->  p.getFecha().getYear()==anio)
 							.map(p -> {
@@ -263,13 +282,13 @@ public class JuegosController {
 		
 
 		@DeleteMapping("juegos/{name}")
-		public void eliminar(@PathVariable String name, @RequestHeader("usuario") String usuario) {
-			JuegoService.eliminar(name, usuario);	
+		public void eliminar(@PathVariable String name, @RequestHeader("authorization") String jwt) {
+			JuegoService.eliminar(name, getUserFormJWT(jwt));	
 		}
 		@GetMapping("juegos/partidas/jugadores/{regex}")
-		public List<String> obtenerJugadores(@PathVariable String regex, @RequestHeader("usuario") String usuario){
+		public List<String> obtenerJugadores(@PathVariable String regex, @RequestHeader("authorization") String jwt){
 			List<String> jugadores = JuegoService.obtenerTodosJuegos().stream()
-				.filter(juego-> juego.getUsuario().equalsIgnoreCase(usuario) && juego.getPartidas()!=null)
+				.filter(juego-> juego.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt)) && juego.getPartidas()!=null)
 				.flatMap(j -> j.getPartidas().stream())
 				.filter(p -> p.getJugadores()!= null)
 				.flatMap(partida -> partida.getJugadores().stream())
@@ -280,8 +299,8 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/{nombre}/estadisticas")
-		public List<EstadisticasJuego>  obtenerEstadisticasJuego(@PathVariable String nombre, @RequestHeader("usuario") String usuario){
-			Optional<Juego> juego = JuegoService.obtenerJuego(nombre).filter(j -> j.getUsuario().equalsIgnoreCase(usuario));
+		public List<EstadisticasJuego>  obtenerEstadisticasJuego(@PathVariable String nombre, @RequestHeader("authorization") String jwt){
+			Optional<Juego> juego = JuegoService.obtenerJuego(nombre).filter(j -> j.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt)));
 			if (!juego.isPresent()) {
 		        throw new ResponseStatusException(
 				          HttpStatus.NOT_FOUND, "El juego no existe");
@@ -337,8 +356,8 @@ public class JuegosController {
 		}
 		
 		@GetMapping("juegos/{nombre}/records")
-		public Jugador obtenerRecordsJuego(@PathVariable String nombre, @RequestHeader("usuario") String usuario){
-			Optional<Juego> juego = JuegoService.obtenerJuego(nombre).filter(j -> j.getUsuario().equalsIgnoreCase(usuario));
+		public Jugador obtenerRecordsJuego(@PathVariable String nombre, @RequestHeader("authorization") String jwt){
+			Optional<Juego> juego = JuegoService.obtenerJuego(nombre).filter(j -> j.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt)));
 			if (!juego.isPresent()) {
 		        throw new ResponseStatusException(
 				          HttpStatus.NOT_FOUND, "El juego no existe");
@@ -360,8 +379,8 @@ public class JuegosController {
 		}
 	
 		@GetMapping("juegos/estadisticas/personales")
-		public List<EstadisticasPersonales>  obtenerEstadisticasPersonales(@RequestHeader("usuario") String usuario){
-			Optional<List<Juego>> juegos = JuegoService.obtenerJuegos(usuario);
+		public List<EstadisticasPersonales>  obtenerEstadisticasPersonales(@RequestHeader("authorization") String jwt){
+			Optional<List<Juego>> juegos = JuegoService.obtenerJuegos(getUserFormJWT(jwt));
 			List<EstadisticasPersonales> estadisticas = juegos.get().stream()
 				.filter(j -> j.getPartidas()!=null)	
 				.map(j -> {
@@ -393,12 +412,7 @@ public class JuegosController {
 				System.out.println(msg);
 				e.setDescription(msg);
 				return e;
-			}
-		@GetMapping("usuarios/{usuario}")
-		public boolean validarUsuario(String usuario) {
-		 return	JuegoService.validarUsuario(usuario);
-		}
-		
+			}		
 	
 	
 }

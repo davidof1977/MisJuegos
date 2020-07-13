@@ -1,7 +1,7 @@
 package davidof.misjuegos.security;
 
 import static davidof.misjuegos.security.Constantes.LOGIN_URL;
-
+import static davidof.misjuegos.security.Constantes.REGISTRO_URL;
 import java.util.Arrays;
 
 import org.springframework.context.annotation.Bean;
@@ -52,6 +52,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 			.cors().and()
 			.csrf().disable()
 			.authorizeRequests().antMatchers(HttpMethod.POST, LOGIN_URL).permitAll()
+			.antMatchers(HttpMethod.POST, REGISTRO_URL).permitAll()
 			.anyRequest().authenticated().and()
 				.addFilter(new JWTAuthenticationFilter(authenticationManager()))
 				.addFilter(new JWTAuthorizationFilter(authenticationManager()));

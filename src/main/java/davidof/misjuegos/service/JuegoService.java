@@ -54,6 +54,6 @@ public interface JuegoService {
 	 */
 	Optional<List<Juego>> obtenerJuegos(String usuario);
 	
-	Boolean validarUsuario(String usuario);
+
 	
 }

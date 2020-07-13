@@ -61,14 +61,6 @@ public class JuegoServiceImpl implements JuegoService {
 		
 	}
 	
-	@Override 
-	public Boolean validarUsuario(String usuario) {
-		MongoClient mongoClient = MongoClients.create("mongodb+srv://davidof1977:baralo18@davidof1977.4gzm1.mongodb.net/mis-juegos?retryWrites=true&w=majority");
-		MongoTemplate template = new MongoTemplate(mongoClient, "mis-juegos");
-		Criteria criterios = Criteria.where("usuario").is(usuario);
-		List<Juego> juegos = template.find(new Query().addCriteria(criterios),Juego.class);
-		return !juegos.isEmpty();
-	}
 	
 	@Override
 	public Optional<List<Juego>> obtenerJuegos(String usuario) {
