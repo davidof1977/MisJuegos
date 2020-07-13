@@ -29,7 +29,7 @@ public interface JuegoService {
 	 * @param id Id del producto
 	 * @return
 	 */
-	Optional<Juego> obtenerJuego(String id);
+	Optional<Juego> obtenerJuego(String id, String usuario);
 	
 	/**
 	 * Elimina el producto correspondiente al id

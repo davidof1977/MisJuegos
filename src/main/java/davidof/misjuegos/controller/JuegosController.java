@@ -82,7 +82,7 @@ public class JuegosController {
 	
 		@GetMapping("juegos/{nombre}")
 		public Optional<Juego> obtenerJuego(@PathVariable String nombre, @RequestHeader("authorization") String jwt) {
-			Optional<Juego> juego = JuegoService.obtenerJuego(nombre);
+			Optional<Juego> juego = JuegoService.obtenerJuego(nombre, getUserFormJWT(jwt));
 			if (!juego.isPresent()) {
 		        throw new ResponseStatusException(
 				          HttpStatus.NOT_FOUND, "El juego no existe");
@@ -123,7 +123,7 @@ public class JuegosController {
 		@GetMapping("juegos/{nombre}/partidas")
 		public List<Partida> obtenerPartidas(@PathVariable String nombre, @RequestHeader("authorization") String jwt) {
 			try {
-				Juego juego = JuegoService.obtenerJuego(nombre).filter(j -> j.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt))).orElseThrow(NotFoundException::new);
+				Juego juego = JuegoService.obtenerJuego(nombre, getUserFormJWT(jwt)).orElseThrow(NotFoundException::new);
 				List<Partida> partidas = juego.getPartidas();
 				if(partidas!=null && partidas.size()> 0) {
 					partidas.sort(new PartidasJuegoComparator());
@@ -142,7 +142,8 @@ public class JuegosController {
 		
 		@GetMapping("juegos/{nombre}/ganadas")
 		public List<Partida> obtenerPartidasGanadas(@PathVariable String nombre, @RequestHeader("authorization") String jwt) {
-			Optional<Juego> juegos = JuegoService.obtenerJuego(nombre).filter(j -> j.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt)));
+			
+			Optional<Juego> juegos = JuegoService.obtenerJuego(nombre, getUserFormJWT(jwt));
 			Optional<List<Partida>> partidas;
 			try {
 				partidas = Optional.ofNullable(juegos.orElseThrow(NotFoundException::new).getPartidas());
@@ -300,7 +301,7 @@ public class JuegosController {
 		
 		@GetMapping("juegos/{nombre}/estadisticas")
 		public List<EstadisticasJuego>  obtenerEstadisticasJuego(@PathVariable String nombre, @RequestHeader("authorization") String jwt){
-			Optional<Juego> juego = JuegoService.obtenerJuego(nombre).filter(j -> j.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt)));
+			Optional<Juego> juego = JuegoService.obtenerJuego(nombre, getUserFormJWT(jwt));
 			if (!juego.isPresent()) {
 		        throw new ResponseStatusException(
 				          HttpStatus.NOT_FOUND, "El juego no existe");
@@ -357,7 +358,7 @@ public class JuegosController {
 		
 		@GetMapping("juegos/{nombre}/records")
 		public Jugador obtenerRecordsJuego(@PathVariable String nombre, @RequestHeader("authorization") String jwt){
-			Optional<Juego> juego = JuegoService.obtenerJuego(nombre).filter(j -> j.getUsuario().equalsIgnoreCase(getUserFormJWT(jwt)));
+			Optional<Juego> juego = JuegoService.obtenerJuego(nombre, getUserFormJWT(jwt));
 			if (!juego.isPresent()) {
 		        throw new ResponseStatusException(
 				          HttpStatus.NOT_FOUND, "El juego no existe");

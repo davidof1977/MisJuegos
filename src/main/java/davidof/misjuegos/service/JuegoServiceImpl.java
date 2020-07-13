@@ -32,8 +32,8 @@ public class JuegoServiceImpl implements JuegoService {
 	}
 
 	@Override
-	public Optional<Juego> obtenerJuego(String nombre) {
-		return juegoRepository.findByNombre(nombre);
+	public Optional<Juego> obtenerJuego(String nombre, String usuario) {
+		return juegoRepository.findByNombreAndUsuario(nombre, usuario);
 	}
 
 	@Override
