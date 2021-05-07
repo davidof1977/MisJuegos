@@ -16,10 +16,10 @@ pipeline {
                 bat 'mvn install'
             }
         }
-        post {
+      }
+      post {
         always {
             junit 'build/reports/**/*.xml'
-        }
-    }  
+        }  
     }
 }
