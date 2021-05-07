@@ -7,28 +7,24 @@ pipeline {
     environment {
         NEXUS_VERSION = "nexus3"
         NEXUS_PROTOCOL = "http"
-        NEXUS_URL = "localhost:8081"
+        NEXUS_URL = "local:8081"
         NEXUS_REPOSITORY = "maven-nexus-repo"
         NEXUS_CREDENTIAL_ID = "nexus-user-credentials"
     }
       stages {
-        stage('Inicializar') {
-            steps {
-                echo "PATH = ${PATH}"
-            }
-        }
         stage('Build') {
             steps {
                 echo "maven" 
                 bat 'mvn install'
             }
         }
-         stage('Test') {
-            steps {
-                echo "maven test" 
-                bat 'mvn test'
-            }
-        }
+        
+//         stage('Test') {
+//            steps {
+//                echo "maven test" 
+//                bat 'mvn test'
+//            }
+//        }
         stage("Publish to Nexus Repository Manager") {
             steps {
                 script {
@@ -65,9 +61,9 @@ pipeline {
             }
         }
       }
-      post {
-        always {
-            junit '**/target/surefire-reports/*.xml'
-        }  
-    }
+//      post {
+//        always {
+//            junit '**/target/surefire-reports/*.xml'
+//        }  
+//    }
 }
