@@ -11,5 +11,11 @@ public class TestPruebas {
 		Prueba1 p = new Prueba1();
 		Assert.assertTrue("OK", p.getPrueba1());
 	}
+	
+	@Test
+	public void test2() {
+		Prueba1 p = new Prueba1();
+		Assert.assertFail("Fail");
+	}
 
 }
