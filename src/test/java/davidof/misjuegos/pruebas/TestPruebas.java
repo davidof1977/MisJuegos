@@ -15,7 +15,7 @@ public class TestPruebas {
 	@Test
 	public void test2() {
 		Prueba1 p = new Prueba1();
-		Assert.fail();;
+		Assert.assertTrue(false);
 	}
 
 }
