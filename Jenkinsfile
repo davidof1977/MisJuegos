@@ -15,6 +15,11 @@ pipeline {
                 echo "maven" 
                 bat 'mvn install'
             }
-        }  
+        }
+        post {
+        always {
+            junit 'build/reports/**/*.xml'
+        }
+    }  
     }
 }
