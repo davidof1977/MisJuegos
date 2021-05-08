@@ -17,7 +17,7 @@ pipeline {
 		       script {
 		       def scannerHome = tool 'Sonarqube';
 		           withSonarQubeEnv("Sonarqube") {
-		           bat "${tool("sonarqube")}/bin/sonar-scanner \
+		           bat "${tool("Sonarqube")}/bin/sonar-scanner \
 		           -Dsonar.projectKey=davidof:MisJuegos \
 		           -Dsonar.sources=src \
 		           -Dsonar.host.url=http://localhost:9000 \
