@@ -15,7 +15,7 @@ pipeline {
       	stage('Code Quality Check via SonarQube') {
 		   steps {
 		       script {
-		       def scannerHome = tool 'sonarqube';
+		       def scannerHome = tool 'Sonarqube';
 		           withSonarQubeEnv("sonarqube-container") {
 		           bat "${tool("sonarqube")}/bin/sonar-scanner \
 		           -Dsonar.projectKey=davidof:MisJuegos \
