@@ -16,7 +16,7 @@ pipeline {
 		   steps {
 		       script {
 		       def scannerHome = tool 'Sonarqube';
-		           withSonarQubeEnv("sonarqube-container") {
+		           withSonarQubeEnv("Sonarqube") {
 		           bat "${tool("sonarqube")}/bin/sonar-scanner \
 		           -Dsonar.projectKey=davidof:MisJuegos \
 		           -Dsonar.sources=src \
