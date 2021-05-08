@@ -21,8 +21,7 @@ pipeline {
 		           -Dsonar.projectKey=davidof:MisJuegos \
 		           -Dsonar.sources=src \
 		           -Dsonar.host.url=http://localhost:9000 \
-		           -Dsonar.login=admin \
-		           -Dsonar.password=D@vinci1"
+		           -Dsonar.login=DavidSonar"
 		               }
 		           }
 		       }
