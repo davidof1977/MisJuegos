@@ -12,6 +12,20 @@ pipeline {
         NEXUS_CREDENTIAL_ID = "nexus-user-credentials"
     }
       stages {
+      	stage('Code Quality Check via SonarQube') {
+		   steps {
+		       script {
+		       def scannerHome = tool 'sonarqube';
+		           withSonarQubeEnv("sonarqube-container") {
+		           bat "${tool("sonarqube")}/bin/sonar-scanner \
+		           -Dsonar.projectKey=davidof:MisJuegos \
+		           -Dsonar.sources=src \
+		           -Dsonar.host.url=http://localhost:9000 \
+		           -Dsonar.login=sonar-credentials"
+		               }
+		           }
+		       }
+		   }
         stage('Build') {
             steps {
                 echo "maven" 
