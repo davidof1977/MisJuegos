@@ -8,25 +8,11 @@ pipeline {
         NEXUS_VERSION = "nexus3"
         NEXUS_PROTOCOL = "http"
         NEXUS_URL = "localhost:8081"
-        NEXUS_REPOSITORY = "maven-nexus-repo"
+        NEXUS_REPOSITORY = "maven-releases"
         NEXUS_CREDENTIAL_ID = "nexus-user-credentials"
     }
       stages {
-      	stage('Code Quality Check via SonarQube') {
-		   steps {
-		       script {
-		       def scannerHome = tool 'Sonarqube';
-		           withSonarQubeEnv("Sonarqube") {
-		           bat "${tool("Sonarqube")}/bin/sonar-scanner \
-		           -Dsonar.projectKey=davidof:MisJuegos \
-		           -Dsonar.sources=src \
-		           -Dsonar.java.binaries=target \
-		           -Dsonar.host.url=http://localhost:9000 \
-		           -Dsonar.login=5f0e23ac47a28e2f25fff275d2a4106dab50d245"
-		               }
-		           }
-		       }
-		   }
+      	
         stage('Build') {
             steps {
                 echo "maven" 
