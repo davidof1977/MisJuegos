@@ -16,7 +16,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo "maven" 
-                ssh 'mvn install'
+                sh 'mvn install'
             }
         }
         
